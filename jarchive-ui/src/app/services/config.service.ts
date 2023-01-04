@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { UserManagerSettings } from 'oidc-client';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { Location } from '@angular/common';
+import { Location, PlatformLocation } from '@angular/common';
 import { AuthUserState } from './auth.service';
 
 @Injectable({providedIn: 'root'})
@@ -16,25 +16,27 @@ export class ConfigService {
   tabs: TabRef[] = [];
   settings$ = new BehaviorSubject<Settings>(this.settings);
   userState$ = new BehaviorSubject<AuthUserState>({} as AuthUserState);
+  basehref: string;
+  absoluteUrl: string;
+
+  constructor(
+    private http: HttpClient,
+    private location: Location,
+    platform: PlatformLocation
+  ) {
+    this.basehref = platform.getBaseHrefFromDOM();
+    this.absoluteUrl = `${window.location.protocol}//${window.location.host}${this.basehref}`;
+    this.local = this.getLocal();
+  }
 
   get currentPath(): string {
     return this.location.path();
   }
 
-  constructor(
-    private http: HttpClient,
-    private location: Location
-  ) {
-    this.local = this.getLocal();
-  }
-
   // use setting, or relative
   get apphost(): string {
-    const v = this.settings.apphost
-      ? this.location.normalize(this.settings.apphost)
-      : ''
-    ;
-    return v;
+    const v = this.settings.apphost || this.basehref;
+    return this.location.normalize(v);
   }
 
   load(): Observable<any> {
@@ -49,10 +51,6 @@ export class ConfigService {
           this.settings$.next(this.settings);
         })
       );
-  }
-
-  externalUrl(path: string): string {
-    return `${window.location.protocol}//${window.location.host}${this.location.prepareExternalUrl(path)}`;
   }
 
   showTab(url: string): void {

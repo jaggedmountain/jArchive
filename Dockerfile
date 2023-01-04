@@ -29,6 +29,7 @@ COPY --from=api /app/dist /app
 COPY --from=ui /app/dist /app/wwwroot
 ENV COMMIT=$commit
 ENV DOTNET_HOSTBUILDER__RELOADCONFIGCHANGE=false
+ENV DOTNET_EnableDiagnostics=0
 ENV ASPNETCORE_URLS=http://*:5000
 EXPOSE 5000
 CMD [ "./Jarchive" ]

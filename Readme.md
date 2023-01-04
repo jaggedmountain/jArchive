@@ -37,21 +37,21 @@ After registering a client with an identity provider, provide a file
 in `wwwroot/assets/settings.json` like so:
 
 ```json
-settings: {
-  appname: 'jArchive',
-  apphost: '',
-  oidc: {
-    client_id: 'client_id',
-    authority: 'https://identity_url',
-    redirect_uri: 'https://app_url/oidc',
-    silent_redirect_uri: 'https://app_url/assets/oidc-silent.html',
-    response_type: 'code',
-    scope: 'openid profile jarchive-api',
-    automaticSilentRenew: true,
-    monitorSession: false,
-    loadUserInfo: false,
-    useLocalStorage: true,
-    debug: false
+{
+  "appname": "jArchive",
+  "apphost": "",
+  "oidc": {
+    "client_id": "client_id",
+    "authority": "https://identity_url",
+    "redirect_uri": "https://app_url/oidc",
+    "silent_redirect_uri": "https://app_url/assets/oidc-silent.html",
+    "response_type": "code",
+    "scope": "openid profile jarchive-api",
+    "automaticSilentRenew": true,
+    "monitorSession": false,
+    "loadUserInfo": false,
+    "useLocalStorage": true,
+    "debug": false
   }
 }
 ```

@@ -45,7 +45,7 @@ export class InviteComponent implements OnInit {
       first()
     ).subscribe(result => {
       this.invitation = result;
-      this.redeemUrl = this.conf.externalUrl(`/redeem/${result.token}`);
+      this.redeemUrl = `${this.conf.absoluteUrl}/redeem/${result.token}`;
     });
   }
 
