@@ -19,7 +19,7 @@ export class ReaderComponent {
   ) {
 
     this.url$ = api.reader().pipe(
-      map(() => conf.apphost + route.snapshot.queryParams['ReturnUrl']),
+      map(() => route.snapshot.queryParams['ReturnUrl']),
     );
   }
 

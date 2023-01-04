@@ -3,7 +3,6 @@ export const environment = {
   production: true,
   settings: {
     appname: 'jArchive',
-    apphost: '',
     oidc: {
       client_id: 'client_id',
       authority: 'https://identity_url',

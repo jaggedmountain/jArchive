@@ -35,7 +35,6 @@ export class AuthService {
   ) {
 
     config.settings$.pipe(
-      tap(s => console.log(s.oidc?.authority)),
       filter(s => !!s.oidc.authority)
     ).subscribe((s: Settings) => {
 

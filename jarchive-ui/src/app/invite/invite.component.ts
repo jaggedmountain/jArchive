@@ -1,9 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { faClipboard, faFileShield, faGear, faGlasses, faPen, faPenSquare, faShield, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
+import { faClipboard, faGear, faGlasses, faPen, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import { first } from 'rxjs';
 import { Folder, FolderRole, Invitation } from '../api/api.models';
 import { ApiService } from '../api/api.service';
-import { ClipboardService } from '../services/clipboard.service';
 import { ConfigService } from '../services/config.service';
 
 @Component({
@@ -23,8 +22,7 @@ export class InviteComponent implements OnInit {
 
   constructor(
     private api: ApiService,
-    private conf: ConfigService,
-    private clip: ClipboardService
+    private conf: ConfigService
   ){
   }
 
@@ -45,11 +43,8 @@ export class InviteComponent implements OnInit {
       first()
     ).subscribe(result => {
       this.invitation = result;
-      this.redeemUrl = `${this.conf.absoluteUrl}/redeem/${result.token}`;
+      this.redeemUrl = `redeem/${result.token}`;
     });
   }
 
-  toUrl(token: string): void {
-    this.clip.copyToClipboard(this.redeemUrl);
-  }
 }
