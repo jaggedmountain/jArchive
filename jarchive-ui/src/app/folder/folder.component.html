@@ -1,0 +1,97 @@
+<div *ngIf="response$ | async as r; else loading">
+  <div *ngIf="!!r.error">
+    <h2>{{r.error | errmsg}}</h2>
+    <pre>{{r.error | json}}</pre>
+  </div>
+
+  <div *ngIf="!!r.folder">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h4 class="fw-light">
+          <a class="text-decoration-none" [routerLink]="['/']">../</a>
+          <span class="text-break">{{r.folder.name}}</span>
+        </h4>
+      </div>
+      <div>
+        <ng-container *ngIf="r.folder.isOwned">
+          <label class="btn btn-sm btn-outline-secondary ms-2" tabIndex="0" btnCheckbox [(ngModel)]="showEditor">
+            <fa-icon [icon]="faEdit"></fa-icon>&nbsp;
+            <span>Edit</span>
+          </label>
+          <label class="btn btn-sm btn-outline-secondary ms-2" tabIndex="0" btnCheckbox [(ngModel)]="showInvite">
+            <fa-icon [icon]="faShare"></fa-icon>&nbsp;
+            <span>Share</span>
+          </label>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="mb-3">{{r.folder.description}}</div>
+
+    <div class="pop-info text-center mb-3">
+      <fa-icon *ngIf="r.folder.scope==='public'" [icon]="faPublic"></fa-icon>
+      <fa-icon *ngIf="r.folder.scope==='internal'" [icon]="faInternal"></fa-icon>
+      <fa-icon *ngIf="r.folder.scope==='specified'" [icon]="faSpecified"></fa-icon>
+      {{r.folder.scope}}
+    </div>
+
+    <div *ngIf="showEditor" class="pop-secondary p-3 mb-3">
+      <app-folder-editor *ngIf="showEditor" [folder]="r.folder" (deleted)="deleted($event)"
+        (updated)="updated($event)"></app-folder-editor>
+    </div>
+
+    <div *ngIf="showInvite" class="pop-secondary p-3 mb-3">
+      <app-invite *ngIf="showInvite" [folder]="r.folder"></app-invite>
+    </div>
+
+    <div *ngIf="r.folder.canWrite">
+      <app-dropzone (dropped)="dropped($event)">
+        <ng-container *ngIf="dropped$ | async" class="mb-2">
+          <div *ngFor="let p of progress">
+            <span>{{p.name}}</span>
+            <span *ngIf="!!p.error" class="text-danger ms-3">{{p.error | errmsg}}</span>
+            <progressbar [value]="p.progress" type="info">{{p.progress}}%</progressbar>
+          </div>
+        </ng-container>
+      </app-dropzone>
+
+    </div>
+
+    <table class="table" *ngIf="r.folder.files.length">
+      <thead>
+        <th class="fw-normal">Name</th>
+        <th class="fw-normal">Size</th>
+        <th class="fw-normal">Uploaded</th>
+        <th class="fw-normal" *ngIf="r.folder.isOwned">Actions</th>
+      </thead>
+      <tbody class="table-group-divider">
+        <tr *ngFor="let file of r.folder.files">
+          <td>
+            <a [href]="file.url">{{file.name}}</a>
+          </td>
+          <td>{{file.length | filesize}}</td>
+          <td>{{file.creationTime | date}}</td>
+          <td *ngIf="r.folder.isOwned">
+            <a class="btn btn-sm btn-link"
+              [routerLink]="['/file', r.folder.key, r.folder.name, file.name]">
+              <fa-icon [icon]="faGear"></fa-icon>&nbsp;
+              <span>Manage</span>
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="r.folder.files.length===0">
+      Empty folder.
+    </div>
+
+  </div>
+
+</div>
+
+<ng-template #loading>
+  <div class="text-center">
+    <app-spinner></app-spinner>
+  </div>
+</ng-template>

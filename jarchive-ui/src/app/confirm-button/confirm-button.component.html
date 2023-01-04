@@ -1,0 +1,16 @@
+<div class="btn-group">
+  <button [disabled]="confirming" [class]="btnClass" (click)="confirming=true" [disabled]="disabled">
+    <ng-content></ng-content>
+  </button>
+
+  <ng-container *ngIf="confirming">
+    <button [class]="btnClass" (click)="continue(true)">
+      <fa-icon [icon]="faCheck"></fa-icon>&nbsp;
+      <span>Confirm</span>
+    </button>
+    <button [class]="btnClass" (click)="continue(false)">
+      <fa-icon [icon]="faTimes"></fa-icon>&nbsp;
+      <span>Cancel</span>
+    </button>
+  </ng-container>
+</div>

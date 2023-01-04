@@ -1,0 +1,11 @@
+<div *ngIf="url$ | async as url">
+  <p>
+    You have received a "reader" cookie that allows for
+    downloading protected files to which you have access.
+
+    As long as this cookie is valid, you can download
+    files directly without this intermediate step.
+
+  </p>
+  <a [href]="url">{{url.split('/').pop()}}</a>
+</div>

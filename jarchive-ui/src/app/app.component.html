@@ -1,0 +1,30 @@
+<nav>
+  <div>
+    <a class="display-4 text-decoration-none" [routerLink]="['/']">
+      <fa-icon [icon]="faFolder"></fa-icon>&nbsp;
+      {{title}}
+    </a>
+    <p class="lead">
+      A simple file store.
+    </p>
+  </div>
+
+  <div class="">
+    <button *ngIf="!logged_in" class="btn btn-outline-primary btn-sm" (click)="login()">
+      <fa-icon [icon]="faUser"></fa-icon>&nbsp;
+      <span>Login</span>
+    </button>
+    <button *ngIf="logged_in" class="btn btn-outline-primary btn-sm" (click)="logout()">
+      <fa-icon [icon]="faUser"></fa-icon>&nbsp;
+      <span>Logout</span>
+    </button>
+  </div>
+
+</nav>
+
+<main>
+  <hr class="mt-0"/>
+
+  <router-outlet></router-outlet>
+
+</main>

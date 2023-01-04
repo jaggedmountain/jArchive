@@ -1,0 +1,11 @@
+<div class="dropzone" [class.dropzone-active]="dropzone">
+
+  <label [for]="inputId">
+    <input [id]="inputId" type="file" multiple style="display:none;" (change)="filesSelected($event)">
+    <span> Drag files here to upload, or </span>
+    <span [class]="btnClass">Browse</span>
+  </label>
+
+  <ng-content></ng-content>
+
+</div>

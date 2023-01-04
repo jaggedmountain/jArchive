@@ -1,0 +1,7 @@
+<span #span (click)="copy()" (mouseenter)="hover(true)" (mouseleave)="hover(false)">
+  <ng-content></ng-content>
+</span>
+
+<span *ngIf="clipped || hovering" class="ms-1" [class.text-success]="clipped">
+  <fa-icon [icon]="clipped ? iconChecked : icon" size="lg"></fa-icon>
+</span>

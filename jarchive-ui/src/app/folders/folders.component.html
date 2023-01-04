@@ -1,0 +1,46 @@
+<div *ngIf="userState$ | async as user">
+  <div *ngIf="user?.logged_in" class="d-flex justify-content-around mb-3">
+    <a class="btn btn-link link-secondary" (click)="create()">
+      <fa-icon [icon]="faAdd"></fa-icon>&nbsp;
+      <span>Create New Folder</span>
+    </a>
+    <a class="btn btn-link link-secondary" [routerLink]="['/redeem']">
+      <fa-icon [icon]="faRedeem"></fa-icon>&nbsp;
+      <span>Redeem Access Token</span>
+    </a>
+  </div>
+</div>
+
+<ng-container *ngIf="folders$ | async as folders; else loading">
+  <table *ngIf="folders.length" class="table">
+    <thead>
+      <th class="fw-normal">Folder</th>
+      <th class="fw-normal">Description</th>
+      <th class="fw-normal">Access</th>
+    </thead>
+    <tbody class="table-group-divider">
+      <tr *ngFor="let f of folders$ | async">
+        <td class="text-break"><a [routerLink]="['/folder', f.key, f.name]">./{{f.name}}</a></td>
+        <td>{{f.description}}</td>
+        <td class="text-nowrap">
+          <fa-icon *ngIf="f.scope==='public'" [icon]="faPublic"></fa-icon>
+          <fa-icon *ngIf="f.scope==='internal'" [icon]="faInternal"></fa-icon>
+          <fa-icon *ngIf="f.scope==='specified'" [icon]="faSpecified"></fa-icon>
+          <span class="ms-1">{{f.scope}}</span>
+        </td>
+
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="folders.length==0" class="pop-secondary text-center p-3">
+    No accessible folders.
+  </div>
+
+</ng-container>
+
+<ng-template #loading>
+  <div class="text-center">
+    <app-spinner></app-spinner>
+  </div>
+</ng-template>

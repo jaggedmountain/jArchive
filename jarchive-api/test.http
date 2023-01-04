@@ -1,0 +1,100 @@
+# Example tests with REST Client (VSCode Extension)
+
+@url = http://localhost:5272/api
+@json = content-type: application/json
+@auth = Authorization: Bearer {{login.response.body.access_token}}
+@folder = 471dc5e6ea3844c2ad4faf05a3b7b787
+
+###
+# Obtain access token from IdentityServer
+# @name login
+#
+POST http://localhost:5000/connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password
+&client_id=dev-client
+&client_secret=dev-secret
+&scope=openid dev-api
+&username=admin@this.ws
+&password=321ChangeMe!
+
+###
+GET {{url}}/folders
+{{auth}}
+
+###
+GET {{url}}/folder/{{folder}}
+{{auth}}
+
+###
+POST {{url}}/folder
+{{auth}}
+{{json}}
+
+{}
+
+###
+PUT {{url}}/folder
+{{auth}}
+{{json}}
+
+{
+    "Key": "{{folder}}",
+    "Name": "test_public",
+    "Description": "test public folder",
+    "Scope": "public"
+}
+
+###
+DELETE {{url}}/folder/{{folder}}
+{{auth}}
+
+###
+POST {{url}}/folder/invite/{{folder}}
+{{auth}}
+{{json}}
+
+{
+    "Key": "{{folder}}",
+    "Role": 0
+}
+
+###
+PUT {{url}}/folder/redeem/205db0de40d7ca2e
+{{auth}}
+
+###
+POST {{url}}/folder/reset/{{folder}}
+{{auth}}
+
+###
+DELETE {{url}}/file/{{folder}}/.jarchive
+{{auth}}
+
+###
+POST {{url}}/file/upload/{{folder}}
+{{auth}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.gif"
+Content-Type: application/octet-stream
+
+< /Users/jam/Downloads/test.gif
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+GET http://localhost:5272/get/471dc5e6ea3844c2ad4faf05a3b7b787/folder/.jarchive
+{{auth}}
+
+###
+PUT {{url}}/file/rename
+{{auth}}
+{{json}}
+
+{
+    "key": "{{folder}}",
+    "newName": "newfile.gif",
+    "oldName": ".jarchive"
+}

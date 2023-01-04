@@ -1,0 +1,33 @@
+<ng-container *ngIf="response$ | async as model; else loading">
+  <div class="mb-3">
+    <h4 class="fw-light">
+      <a class="text-decoration-none" [routerLink]="['/']">../</a>
+      <a class="text-decoration-none" [routerLink]="['/folder', model.key, model.folder]">{{model.folder}}/</a>
+      <span class="text-break">{{model.name}}</span>
+    </h4>
+  </div>
+
+  <div class="input-group mb-5">
+    <div class="form-floating">
+      <input name="token" id="input_token" type="text" class="form-control" placeholder="New Name" maxlength="255" [(ngModel)]="newName">
+      <label for="input_token">New Name</label>
+    </div>
+    <button class="btn btn-outline-secondary" (click)="rename(model)">
+      <fa-icon [icon]="faRename"></fa-icon>&nbsp;
+      <span>Rename</span>
+    </button>
+  </div>
+
+  <div class="text-center mb-3">
+    <app-confirm-button btnClass="btn btn-outline-danger" (confirm)="delete(model)">
+      <fa-icon [icon]="faTrash"></fa-icon>&nbsp;
+      <span>Delete File</span>
+    </app-confirm-button>
+  </div>
+</ng-container>
+
+<ng-template #loading>
+  <div class="text-center">
+    <app-spinner></app-spinner>
+  </div>
+</ng-template>

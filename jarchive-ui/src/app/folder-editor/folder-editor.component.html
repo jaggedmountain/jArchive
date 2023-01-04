@@ -1,0 +1,65 @@
+<h4 class="fw-light">Edit Folder</h4>
+
+<div class="text-center">
+
+  <div class="form-floating mb-2">
+    <input name="name" id="input_name" type="text" class="form-control" placeholder="name" maxlength="255" [(ngModel)]="folder.name">
+    <label for="input_name">Name</label>
+  </div>
+
+  <div class="form-floating mb-2">
+    <textarea name="description" id="input_description" class="form-control" placeholder="description" maxlength="1024"
+      [(ngModel)]="folder.description"></textarea>
+    <label for="input_description">Description</label>
+  </div>
+
+  <div class="mb-3">
+    <label class="visually-hidden" for="select_role">Access Scope</label>
+    <div name="role" id="select_role" class="btn-group" btnRadioGroup [(ngModel)]="folder.scope">
+      <label class="btn btn-outline-secondary" btnRadio="public">
+        <fa-icon [icon]="faPublic"></fa-icon>&nbsp;
+        <span>Public</span>
+      </label>
+      <label class="btn btn-outline-secondary" btnRadio="internal">
+        <fa-icon [icon]="faInternal"></fa-icon>&nbsp;
+        <span>Internal</span>
+      </label>
+      <label class="btn btn-outline-secondary" btnRadio="specified">
+        <fa-icon [icon]="faSpecified"></fa-icon>&nbsp;
+        <span>Specified</span>
+      </label>
+    </div>
+    <ul class="form-text list-unstyled">
+      <li><em>Public</em> allows read to everyone.</li>
+      <li><em>Internal</em> allows read to logged-in users.</li>
+      <li><em>Specified</em> allows read to specific logged-in users.</li>
+    </ul>
+  </div>
+
+  <button class="btn btn-outline-secondary mb-2" (click)="update()">
+    <fa-icon [icon]="faUpdate"></fa-icon>&nbsp;
+    <span>Update</span>
+  </button>
+
+
+  <hr />
+
+  <div class="mb-3">
+    <app-confirm-button btnClass="btn btn-outline-secondary" (confirm)="reset()">
+      <fa-icon [icon]="faBan"></fa-icon>&nbsp;
+      <span>Reset Access</span>
+    </app-confirm-button>
+    <div class="form-text">Removes all specified access, leaving only you as the owner.</div>
+  </div>
+
+  <hr />
+
+  <div class="mb-3">
+    <app-confirm-button (confirm)="delete()" btnClass="btn btn-outline-danger">
+      <fa-icon class="me-1" [icon]="faTrash"></fa-icon>
+      <span>Delete Folder</span>
+    </app-confirm-button>
+    <div class="form-text">Deletes this folder along with any file contents.</div>
+  </div>
+
+</div>

@@ -1,0 +1,67 @@
+<h4 class="fw-light">Sharing Options</h4>
+
+<ul>
+  <li>Generate a token with the desired options.</li>
+  <li>Share this token or url to whomever you would like to have access.</li>
+</ul>
+<div class="row">
+  <div class="col">
+    <div class="mb-3">
+      <label class="visually-hidden" for="select_role">Role</label>
+      <div name="role" id="select_role" class="btn-group" btnRadioGroup [(ngModel)]="invitation.role">
+        <label class="btn btn-outline-secondary" btnRadio="reader">
+          <fa-icon [icon]="faReader"></fa-icon>&nbsp;
+          <span>Reader</span>
+        </label>
+        <label class="btn btn-outline-secondary" btnRadio="writer">
+          <fa-icon [icon]="faWriter"></fa-icon>&nbsp;
+          <span>Writer</span>
+        </label>
+        <label class="btn btn-outline-secondary" btnRadio="owner">
+          <fa-icon [icon]="faOwner"></fa-icon>&nbsp;
+          <span>Owner</span>
+        </label>
+      </div>
+      <div class="form-text">What role should this token provide?</div>
+    </div>
+
+    <div class="mb-3 form-check form-switch">
+      <input name="multipleUse" class="form-check-input" type="checkbox" role="switch" id="inputMultiUse"
+        placeholder="30" [(ngModel)]="invitation.multipleUse">
+      <label class="form-check-label" for="inputMultiUse">Multiple Use Token</label>
+      <div class="form-text">Can this token be redeemed multiple times or once? </div>
+    </div>
+
+    <div class="mb-3 form-floating mb-3">
+      <input name="expirationMinutes" id="inputExpirationMinutes" type="number" class="form-control" placeholder="30" min="1" max="10080" maxlength="5"
+        [(ngModel)]="invitation.expirationMinutes">
+      <label for="inputExpirationMinutes">Expiration minutes [1 - 10000]</label>
+      <div class="form-text">How long should this token be valid? </div>
+    </div>
+  </div>
+
+  <div class="col text-center">
+    <div class="mb-3">
+      <button type="button" class="btn btn-outline-primary" (click)="invite()">
+        <fa-icon [icon]="faGear"></fa-icon>&nbsp;
+        <span>Generate</span>
+      </button>
+    </div>
+
+    <div *ngIf="invitation.token">
+      <div>
+        <app-clipspan>{{invitation.token}}</app-clipspan> |
+        <a [href]="redeemUrl">share link</a>
+      </div>
+      <!-- <div>
+        <button class="btn btn-sm btn-outline-secondary" (click)="toUrl(invitation.token)">
+          <fa-icon [icon]="faClipboard"></fa-icon>&nbsp;
+          <span>Copy Link</span>
+        </button>
+      </div> -->
+      <div class="form-text">
+        Provide collaborators either the token or the share link.
+      </div>
+    </div>
+  </div>
+</div>

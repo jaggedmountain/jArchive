@@ -1,0 +1,19 @@
+<h4>Redeem Share Token</h4>
+
+<div class="input-group mb-5">
+  <div class="form-floating">
+    <input name="token" id="input_token" type="text" class="form-control" placeholder="1234abcd" maxlength="64" [(ngModel)]="token">
+    <label for="input_token">Token</label>
+  </div>
+  <button class="btn btn-outline-secondary" (click)="redeem()">Redeem</button>
+</div>
+
+<div *ngIf="folder$ | async as response">
+  <div *ngIf="!!response.error" class="pop-danger text-center p-3">
+    {{ response.error | errmsg}}
+  </div>
+  <div *ngIf="response.folder?.name">
+    <span class="">Access has been granted.</span>&nbsp;
+    <a [routerLink]="['/folder', response.folder.key, response.folder.name]">Continue</a>
+  </div>
+</div>
