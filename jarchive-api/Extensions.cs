@@ -44,4 +44,32 @@ public static class Extentions
             isPublic ? "public": "get"
         );
     }
+
+    public static long ToByteMultiplier(this string suffix) => suffix.ToLower() switch
+    {
+        "k" => 0x400,
+        "m" => 0x100000,
+        "g" => 0x40000000,
+        "t" => 0x10000000000,
+        _ => 1
+    };
+
+    public static long ToSizeBi(this string token)
+    {
+        if (Int64.TryParse(token, out long result))
+            return result;
+
+        System.Text.RegularExpressions.Regex regex = new(
+            @"^(\d+)([bkmgt])",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase
+        );
+
+        var match = regex.Match(token);
+        if (match.Success)
+            return
+                Int64.Parse(match.Groups[1].Value) *
+                match.Groups[2].Value.ToByteMultiplier();
+
+        throw new Exception($"Invalid Numeric String: [{token}]");
+    }
 }

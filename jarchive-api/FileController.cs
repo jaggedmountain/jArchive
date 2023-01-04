@@ -39,8 +39,10 @@ public class FileController : _Controller
     public async Task<IResult> UploadFile()
     {
         FormOptions options = new();
-        if (Settings.MaxFileSize > 0)
-            options.MultipartBodyLengthLimit = Settings.MaxFileSize;
+
+        long maxsize = Settings.MaxFileSize.ToSizeBi();
+        if (maxsize > 0)
+            options.MultipartBodyLengthLimit = maxsize;
 
         long length = Request.Headers.ContentLength ?? 0;
         if (length > options.MultipartBodyLengthLimit)
