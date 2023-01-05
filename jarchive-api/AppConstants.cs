@@ -25,4 +25,5 @@ public static class Message
     public const string FilesizeExceedsLimit = "FilesizeExceedsLimit";
     public const string UploadMissingFilename = "UploadMissingFilename";
     public const string UploadFilenameInvalid = "UploadFilenameInvalid";
+    public const string UploadFailed = "UploadFailed";
 }

@@ -36,7 +36,7 @@ public class FileController : _Controller
     [HttpPost("api/file/upload/{folder}")]
     [DisableFormValueModelBinding]
     [DisableRequestSizeLimit]
-    public async Task<IResult> UploadFile()
+    public async Task<IResult> UploadFile(CancellationToken ct = default)
     {
         FormOptions options = new();
 
@@ -56,7 +56,7 @@ public class FileController : _Controller
 
         try
         {
-            await ProcessUpload(Request, options, filename =>
+            await ProcessUpload(Request, options, ct, filename =>
                 {
                     string cleanname = filename.SanitizeFilename();
                     if (cleanname.Equals(AppConstants.MetadataFilename))
@@ -192,6 +192,7 @@ public class FileController : _Controller
     private async Task ProcessUpload(
         HttpRequest request,
         FormOptions options,
+        CancellationToken ct,
         Func<string, Stream> getDestinationStream
     )
     {
@@ -226,10 +227,22 @@ public class FileController : _Controller
                     string filename = HeaderUtilities.RemoveQuotes(contentDisposition.FileName).Value!;
 
                     Stream dest = getDestinationStream.Invoke(filename);
-
-                    await section.Body.CopyToAsync(dest);
-                    await dest.FlushAsync();
-                    await dest.DisposeAsync();
+                    try
+                    {
+                        if (Settings.UploadUsingSave)
+                            await Save(section.Body, dest, Settings.UploadBufferSize, filename, ct);
+                        else
+                            await CopyStreams(section.Body, dest, Settings.UploadBufferSize, filename, ct);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"{Message.UploadFailed} {filename}", ex);
+                    }
+                    finally
+                    {
+                        await dest.FlushAsync();
+                        dest.Dispose();
+                    }
 
                     // only processing one file per request, so bail
                     return;
@@ -240,5 +253,47 @@ public class FileController : _Controller
         }
 
         throw new Exception(Message.UploadMissingFilename);
+    }
+
+    private async Task CopyStreams(Stream source, Stream dest, int buffersize, string path, CancellationToken ct)
+    {
+        Logger.LogInformation($"Upload starting: {path}");
+        var started = DateTimeOffset.UtcNow;
+        await source.CopyToAsync(dest, buffersize, ct);
+        long totalBytes = dest.Length;
+        long duration = (long)DateTimeOffset.UtcNow.Subtract(started).TotalSeconds;
+        long rate = totalBytes / duration;
+        Logger.LogInformation($"Upload complete: {totalBytes}b {duration}s {rate}b/s {path}");
+    }
+
+    private async Task Save(Stream source, Stream dest, int buffersize, string path, CancellationToken ct)
+    {
+        byte[] buffer = new byte[buffersize];
+        int bytes = 0;
+        long totalBlocks = 0;
+        long totalBytes = 0;
+        long duration = 0;
+        long rate = 0;
+
+        Logger.LogInformation($"Upload starting: {path}");
+        var started = DateTimeOffset.UtcNow;
+
+        do
+        {
+            bytes = await source.ReadAsync(buffer, 0, buffer.Length, ct);
+            await dest.WriteAsync(buffer, 0, bytes, ct);
+            totalBlocks += 1;
+            totalBytes += bytes;
+            if (totalBlocks % 1024 == 0)
+            {
+                duration = (long)DateTimeOffset.UtcNow.Subtract(started).TotalSeconds;
+                rate = totalBytes / duration;
+                Logger.LogDebug($"Upload pending: {totalBytes}b {duration}s {rate}b/s {path}");
+            }
+        } while (bytes > 0);
+
+        duration = (long)DateTimeOffset.UtcNow.Subtract(started).TotalSeconds;
+        rate = totalBytes / duration;
+        Logger.LogInformation($"Upload complete: {totalBytes}b {duration}s {rate}b/s {path}");
     }
 }
