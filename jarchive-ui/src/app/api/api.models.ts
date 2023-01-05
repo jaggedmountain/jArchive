@@ -64,3 +64,11 @@ export interface FolderResponse {
   folder: Folder;
   error: HttpErrorResponse;
 }
+
+export interface FileUploadStatus {
+  name: string;
+  progress: number;
+  start: number;
+  eta?: number;
+  error?: HttpErrorResponse;
+}

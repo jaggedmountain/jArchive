@@ -26,6 +26,7 @@ import { ClipspanComponent } from './clipspan/clipspan.component';
 import { RedeemComponent } from './redeem/redeem.component';
 import { FolderEditorComponent } from './folder-editor/folder-editor.component';
 import { ProgressbarModule } from 'ngx-bootstrap/progressbar';
+import { ClockPipe } from './services/clock.pipe';
 
 @NgModule({
   declarations: [
@@ -44,7 +45,8 @@ import { ProgressbarModule } from 'ngx-bootstrap/progressbar';
     FilesizePipe,
     ClipspanComponent,
     RedeemComponent,
-    FolderEditorComponent
+    FolderEditorComponent,
+    ClockPipe
   ],
   imports: [
     BrowserModule,

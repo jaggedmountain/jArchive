@@ -50,7 +50,7 @@
           <div *ngFor="let p of progress">
             <span>{{p.name}}</span>
             <span *ngIf="!!p.error" class="text-danger ms-3">{{p.error | errmsg}}</span>
-            <progressbar [value]="p.progress" type="info">{{p.progress}}%</progressbar>
+            <progressbar [value]="p.progress" type="info">{{p.progress}}% eta[{{p.eta | clock}}]</progressbar>
           </div>
         </ng-container>
       </app-dropzone>

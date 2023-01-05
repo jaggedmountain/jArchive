@@ -2,8 +2,8 @@ import { HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/htt
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { faEarthAmericas, faEdit, faGear, faShareAlt, faShieldHalved, faUsers } from '@fortawesome/free-solid-svg-icons';
-import { catchError, debounceTime, from, last, map, merge, mergeMap, Observable, of, Subject, switchMap, tap } from 'rxjs';
-import { Folder, FolderResponse } from '../api/api.models';
+import { catchError, debounceTime, from, map, merge, mergeMap, Observable, of, Subject, switchMap, tap } from 'rxjs';
+import { FileUploadStatus, Folder, FolderResponse } from '../api/api.models';
 import { ApiService } from '../api/api.service';
 
 @Component({
@@ -16,7 +16,7 @@ export class FolderComponent {
   refresh$ = new Subject<string>();
   dropping$ = new Subject<File[]>();
   dropped$: Observable<any>;
-  progress: any[] = [];
+  progress: FileUploadStatus[] = [];
   key = '';
   showInvite = false;
   showEditor = false;
@@ -37,7 +37,6 @@ export class FolderComponent {
       this.refresh$.pipe(debounceTime(1000)),
       route.params.pipe(map(p => p['key']))
     ).pipe(
-      tap(key => this.key = key),
       switchMap(key => api.retrieve(key)),
       tap(r => this.initView(r.folder))
     );
@@ -51,8 +50,7 @@ export class FolderComponent {
           catchError(e => {
             this.uploadError(e, f.name);
             return of(e);
-          }),
-          last()
+          })
         ),
         3 //concurrent
       )
@@ -64,27 +62,33 @@ export class FolderComponent {
   }
 
   uploadAdd(files: File[]): void {
-    this.progress = this.progress.filter(i => i.progress !== 100);
     files.forEach(f => {
       const existing = this.progress.find(i => i.name === f.name);
       if (!existing) {
-        this.progress.push({name: f.name, progress: 0});
+        this.progress.push({name: f.name, progress: 0, start: Date.now()});
       }
     });
   }
 
-  uploadProgress(e: HttpEvent<any>, f: string): void {
-    const existing = this.progress.find(i => i.name === f);
+  uploadProgress(e: HttpEvent<any>, name: string): void {
+    const existing = this.progress.find(i => i.name === name);
     if (!!existing && e.type === HttpEventType.UploadProgress) {
       existing.progress = e.total ? Math.round(100 * e.loaded / e.total!) : 0;
+      const percent = existing.progress / 100;
+      const estimate = (Date.now() - existing.start) / percent;
+      existing.eta = estimate - (estimate * percent);
       if (existing.progress === 100) {
+        existing.eta = 0;
         this.refresh$.next(this.key);
       }
     }
+    if (!existing && e.type === HttpEventType.Sent) {
+      this.progress.push({name, progress: 0, start: Date.now()});
+    }
   }
 
-  uploadError(e: HttpErrorResponse, f: string): void {
-    const existing = this.progress.find(i => i.name === f);
+  uploadError(e: HttpErrorResponse, name: string): void {
+    const existing = this.progress.find(i => i.name === name);
     if (!!existing) {
       existing.error = e;
       existing.progress = 0;
@@ -100,9 +104,13 @@ export class FolderComponent {
   }
 
   initView(f: Folder): void {
+    this.key = f.key;
+
     if (!this.firstLook) {
       this.firstLook = true;
       this.showEditor = f.name === 'New Folder';
     }
+
+    this.progress = this.progress.filter(i => i.progress !== 100);
   }
 }
