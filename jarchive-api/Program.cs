@@ -77,8 +77,8 @@ internal class Program
 
         var app = builder.Build();
         app.UsePathBase(Settings.PathBase);
-        app.UseDefaultFiles();
         app.UseStaticFiles();
+        app.UseRouting();
         app.UseCors(Settings.Cors.Name);
         app.UseAuthentication();
         app.UseAuthorization();
