@@ -36,8 +36,12 @@ public class FileController : _Controller
     [HttpPost("api/file/upload/{folder}")]
     [DisableFormValueModelBinding]
     [DisableRequestSizeLimit]
-    public async Task<IResult> UploadFile(CancellationToken ct = default)
+    public async Task<IResult> UploadFile()
     {
+        CancellationToken ct = CancellationToken.None;
+
+        string destination = "";
+
         FormOptions options = new();
 
         long maxsize = Settings.MaxFileSize.ToSizeBi();
@@ -58,20 +62,25 @@ public class FileController : _Controller
         {
             await ProcessUpload(Request, options, ct, filename =>
                 {
-                    string cleanname = filename.SanitizeFilename();
-                    if (cleanname.Equals(AppConstants.MetadataFilename))
+                    if (string.IsNullOrWhiteSpace(filename) || filename.Equals(AppConstants.MetadataFilename))
                         throw new Exception(Message.UploadFilenameInvalid);
 
-                    Logger.LogInformation($"Uploading {key}/{cleanname} length:{length} subject:{User.Subject()}");
+                    destination = Store.ResolvePath(key, filename);
 
-                    return System.IO.File.Create(
-                        Store.ResolvePath(key, cleanname)
-                    );
+                    Logger.LogInformation($"Uploading {key}/{filename} length:{length} subject:{User.Subject()}");
+
+                    return System.IO.File.Create(destination);
                 }
             );
         }
         catch (Exception ex)
         {
+            // clean up
+            if (System.IO.File.Exists(destination))
+                System.IO.File.Delete(destination);
+
+            Store.Uncache(key);
+
             return JsonError(ex.Message);
         }
 
@@ -210,7 +219,7 @@ public class FileController : _Controller
             throw new Exception(Message.RequestNotMultipart);
 
         MultipartReader reader = new MultipartReader(boundary, request.Body);
-        MultipartSection? section = await reader.ReadNextSectionAsync();
+        MultipartSection? section = await reader.ReadNextSectionAsync(ct);
         while (section is MultipartSection)
         {
             if (ContentDispositionHeaderValue.TryParse(
@@ -224,15 +233,19 @@ public class FileController : _Controller
                     string.IsNullOrEmpty(contentDisposition.FileName.Value).Equals(false)
                 )
                 {
-                    string filename = HeaderUtilities.RemoveQuotes(contentDisposition.FileName).Value!;
+                    string filename = HeaderUtilities.RemoveQuotes(contentDisposition.FileName)
+                        .Value!
+                        .SanitizeFilename()
+                    ;
 
                     Stream dest = getDestinationStream.Invoke(filename);
+
                     try
                     {
                         if (Settings.UploadUsingSave)
-                            await Save(section.Body, dest, Settings.UploadBufferSize, filename, ct);
+                            await Save(section.Body, dest, Settings.UploadBufferSize, ct, filename);
                         else
-                            await CopyStreams(section.Body, dest, Settings.UploadBufferSize, filename, ct);
+                            await CopyStreams(section.Body, dest, Settings.UploadBufferSize, ct, filename);
                     }
                     catch (Exception ex)
                     {
@@ -255,18 +268,18 @@ public class FileController : _Controller
         throw new Exception(Message.UploadMissingFilename);
     }
 
-    private async Task CopyStreams(Stream source, Stream dest, int buffersize, string path, CancellationToken ct)
+    private async Task CopyStreams(Stream source, Stream dest, int buffersize, CancellationToken ct, string path)
     {
         Logger.LogInformation($"Upload starting: {path}");
         var started = DateTimeOffset.UtcNow;
         await source.CopyToAsync(dest, buffersize, ct);
         long totalBytes = dest.Length;
-        long duration = (long)DateTimeOffset.UtcNow.Subtract(started).TotalSeconds;
+        long duration = (long)Math.Max(DateTimeOffset.UtcNow.Subtract(started).TotalSeconds, 1);
         long rate = totalBytes / duration;
         Logger.LogInformation($"Upload complete: {totalBytes}b {duration}s {rate}b/s {path}");
     }
 
-    private async Task Save(Stream source, Stream dest, int buffersize, string path, CancellationToken ct)
+    private async Task Save(Stream source, Stream dest, int buffersize, CancellationToken ct, string path)
     {
         byte[] buffer = new byte[buffersize];
         int bytes = 0;
@@ -286,7 +299,7 @@ public class FileController : _Controller
             totalBytes += bytes;
             if (totalBlocks % 1024 == 0)
             {
-                duration = (long)DateTimeOffset.UtcNow.Subtract(started).TotalSeconds;
+                duration = (long)Math.Max(DateTimeOffset.UtcNow.Subtract(started).TotalSeconds, 1);
                 rate = totalBytes / duration;
                 Logger.LogDebug($"Upload pending: {totalBytes}b {duration}s {rate}b/s {path}");
             }
