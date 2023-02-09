@@ -16,7 +16,7 @@ export class OidcComponent {
   ) {
     auth.externalLoginCallback().then(
       (user) => {
-        router.navigateByUrl(user.state || '/');
+        router.navigateByUrl(""+user.state || '/');
       },
       (err) => {
         console.log(err);
