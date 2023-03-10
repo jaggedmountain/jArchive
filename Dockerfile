@@ -1,13 +1,13 @@
 #
 #multi-stage target: ui
 #
-FROM node:18 as ui
+FROM node:18-alpine as ui
 ARG commit
 WORKDIR /app
 COPY ./jarchive-ui/package.json ./jarchive-ui/package-lock.json ./
 RUN npm install
 COPY /jarchive-ui .
-RUN $(npm bin)/ng build --output-path /app/dist && \
+RUN $(npm root)/.bin/ng build jarchive-ui -c production --output-path /app/dist && \
     sed -i s/##COMMIT##/"$commit"/ /app/dist/index.html &&  \
     echo $commit > /app/dist/commit.txt
 
